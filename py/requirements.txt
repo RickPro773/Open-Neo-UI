@@ -1,0 +1,5 @@
+# Python bridge — no external deps needed (uses stdlib only)
+# Standard library: http.server, urllib, json, base64, os, asyncio
+# If you want to use the openai/google SDK instead, uncomment:
+# openai>=1.0.0
+# google-generativeai>=0.7.0
