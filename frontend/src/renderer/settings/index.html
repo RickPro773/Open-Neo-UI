@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"/>
+  <title>Configurações</title>
+  <style>
+    :root {
+      --bg0: #08080a; --bg1: #0f0f12; --bg2: #14141a; --bg3: #1c1c24; --bg4: #24242f;
+      --border: rgba(255,255,255,0.07); --border-md: rgba(255,255,255,0.13);
+      --text1: #e8e8f0; --text2: #9898b0; --text3: #5a5a72;
+      --accent: #7b6cf6; --accent-dim: rgba(123,108,246,0.18);
+      --ok: #3ecfb0; --warn: #f9a825; --err: #f55;
+      --r: 8px; --font: -apple-system,"Segoe UI",Ubuntu,sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100vh; background: var(--bg0); color: var(--text1); font-family: var(--font); font-size: 13px; }
+
+    .page { max-width: 680px; margin: 0 auto; padding: 32px 24px; }
+
+    h1 { font-size: 18px; font-weight: 700; color: var(--text1); margin-bottom: 4px; }
+    .subtitle { font-size: 12px; color: var(--text3); margin-bottom: 32px; }
+
+    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 20px; overflow: hidden; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg1); }
+
+    .field-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .field-row:last-child { border-bottom: none; }
+    .field-label { flex: 0 0 160px; font-size: 12px; color: var(--text2); }
+    .field-desc  { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+    input[type="text"] {
+      flex: 1; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 10px; color: var(--text1);
+      font: inherit; font-size: 12px; outline: none;
+      transition: border-color 0.12s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+    input[type="text"]::placeholder { color: var(--text3); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--bg3); color: var(--text2); font: inherit; font-size: 12px;
+      cursor: pointer; transition: all 0.12s; white-space: nowrap;
+    }
+    .btn:hover { background: var(--bg4); color: var(--text1); border-color: var(--border-md); }
+    .btn.primary { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .btn.primary:hover { background: rgba(123,108,246,0.28); }
+    .btn svg { width: 13px; height: 13px; }
+
+    #save-row { padding: 16px; display: flex; align-items: center; gap: 12px; justify-content: flex-end; }
+    #save-msg { font-size: 12px; color: var(--ok); opacity: 0; transition: opacity 0.2s; }
+    #save-msg.show { opacity: 1; }
+
+    /* Status grid */
+    .svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .svc-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+    }
+    .svc-item:nth-child(2n) { border-right: none; }
+    .svc-item:nth-last-child(-n+2) { border-bottom: none; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; transition: background 0.3s; }
+    .dot.ok  { background: var(--ok); }
+    .dot.err { background: var(--err); }
+    .dot.chk { background: var(--warn); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .svc-info { flex: 1; min-width: 0; }
+    .svc-name   { font-size: 12px; color: var(--text2); }
+    .svc-url    { font-size: 10px; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Ollama models */
+    .model-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .model-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg3); border-radius: 6px; }
+    .model-name { flex: 1; font-size: 12px; color: var(--text1); font-family: monospace; }
+    .model-size { font-size: 11px; color: var(--text3); }
+
+    .pull-row { padding: 0 16px 12px; display: flex; gap: 8px; }
+    .pull-row input { flex: 1; }
+
+    .hint { font-size: 11px; color: var(--text3); padding: 10px 16px; line-height: 1.6; }
+    code { font-family: monospace; color: var(--accent); background: var(--accent-dim); padding: 1px 5px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Configurações</h1>
+  <p class="subtitle">Neo UI v0.3.1 — Neotek Studios</p>
+
+  <!-- ── Servidor ─────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Servidor de IA</div>
+
+    <div class="field-row">
+      <div class="field-label">
+        <div>IP do servidor</div>
+        <div class="field-desc">PC com a stack Docker</div>
+      </div>
+      <input type="text" id="serverHost" placeholder="localhost ou 192.168.1.100" value="localhost"/>
+      <button class="btn" id="btn-detect">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+        Detectar
+      </button>
+    </div>
+
+    <div class="field-row">
+      <div class="field-label">
+        <div>IP do Ollama</div>
+        <div class="field-desc">Pode ser igual ao servidor</div>
+      </div>
+      <input type="text" id="ollamaHost" placeholder="localhost ou 192.168.1.100" value="localhost"/>
+    </div>
+
+    <div class="field-row">
+      <div class="field-label">
+        <div>API Key</div>
+        <div class="field-desc">x-api-key do Gateway Rust</div>
+      </div>
+      <input type="text" id="apiKey" placeholder="neotek-local-dev" value="neotek-local-dev"/>
+    </div>
+
+    <div id="save-row">
+      <span id="save-msg">✓ Configurações salvas</span>
+      <button class="btn" id="btn-test">Testar conexão</button>
+      <button class="btn primary" id="btn-save">Salvar</button>
+    </div>
+  </div>
+
+  <!-- ── Status dos serviços ──────────────────────────── -->
+  <div class="section">
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Status dos serviços</span>
+      <button class="btn" id="btn-refresh-status" style="padding:4px 10px;font-size:11px">Atualizar</button>
+    </div>
+    <div class="svc-grid" id="svc-grid">
+      <!-- preenchido por JS -->
+    </div>
+  </div>
+
+  <!-- ── Modelos Ollama ────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Modelos Ollama instalados</div>
+    <div class="model-list" id="model-list">
+      <div style="color:var(--text3);font-size:12px;padding:4px 0">Carregando...</div>
+    </div>
+    <div class="pull-row">
+      <input type="text" id="model-input" placeholder="Nome do modelo (ex: qwen3:8b, gemma3:4b)"/>
+      <button class="btn" id="btn-pull">Baixar modelo</button>
+    </div>
+    <div class="hint">
+      Modelos recomendados para 24GB RAM: <code>qwen3:14b</code> · <code>qwen3:8b</code><br/>
+      Modelos rápidos: <code>gemma3:4b</code> · <code>qwen3:1.7b</code><br/>
+      <br/>
+      Para baixar via terminal: <code>ollama pull qwen3:8b</code>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(async () => {
+  if (!window.neo) {
+    document.querySelector('.page').innerHTML = '<p style="color:var(--err);padding:32px">Erro: preload não disponível.</p>';
+    return;
+  }
+
+  const $ = id => document.getElementById(id);
+
+  // ── Carregar config atual ──────────────────────────
+  const cfg = await window.neo.server.getConfig();
+  $('serverHost').value = cfg.serverHost;
+  $('ollamaHost').value = cfg.ollamaHost;
+  $('apiKey').value     = cfg.apiKey;
+
+  // ── Salvar ────────────────────────────────────────
+  $('btn-save').addEventListener('click', async () => {
+    await window.neo.server.setConfig({
+      serverHost: $('serverHost').value.trim(),
+      ollamaHost: $('ollamaHost').value.trim(),
+      apiKey:     $('apiKey').value.trim(),
+    });
+    const msg = $('save-msg');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2000);
+    refreshStatus();
+  });
+
+  // ── Detectar IP ───────────────────────────────────
+  $('btn-detect').addEventListener('click', () => {
+    $('serverHost').value = 'localhost';
+    $('ollamaHost').value = 'localhost';
+  });
+
+  // ── Testar conexão ────────────────────────────────
+  $('btn-test').addEventListener('click', async () => {
+    $('btn-test').textContent = 'Testando...';
+    await refreshStatus();
+    $('btn-test').textContent = 'Testar conexão';
+  });
+
+  $('btn-refresh-status').addEventListener('click', refreshStatus);
+
+  // ── Status ────────────────────────────────────────
+  async function refreshStatus() {
+    const grid = $('svc-grid');
+    grid.innerHTML = '';
+
+    const services = await window.neo.system.servicesHealth();
+    services.forEach(svc => {
+      const item = document.createElement('div');
+      item.className = 'svc-item';
+      item.innerHTML = `
+        <span class="dot ${svc.online ? 'ok' : 'err'}"></span>
+        <div class="svc-info">
+          <div class="svc-name">${svc.name}</div>
+          <div class="svc-url">${svc.url}</div>
+        </div>`;
+      grid.appendChild(item);
+    });
+  }
+
+  // ── Modelos Ollama ────────────────────────────────
+  async function loadModels() {
+    const list = $('model-list');
+    const cfg2 = await window.neo.server.getConfig();
+    const ollamaUrl = `http://${cfg2.ollamaHost}:11434`;
+
+    try {
+      const resp = await fetch(`${ollamaUrl}/api/tags`);
+      const data = await resp.json();
+      const models = data.models || [];
+
+      if (models.length === 0) {
+        list.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:4px 0">Nenhum modelo instalado.</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      models.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'model-item';
+        const sizeMB = m.size ? Math.round(m.size / 1024 / 1024) : 0;
+        const sizeStr = sizeMB > 1024 ? `${(sizeMB/1024).toFixed(1)} GB` : `${sizeMB} MB`;
+        el.innerHTML = `
+          <span class="model-name">${m.name}</span>
+          <span class="model-size">${sizeStr}</span>`;
+        list.appendChild(el);
+      });
+    } catch {
+      list.innerHTML = '<div style="color:var(--warn);font-size:12px;padding:4px 0">Ollama offline ou inacessível.</div>';
+    }
+  }
+
+  // ── Pull modelo ───────────────────────────────────
+  $('btn-pull').addEventListener('click', async () => {
+    const name = $('model-input').value.trim();
+    if (!name) return;
+    const btn = $('btn-pull');
+    btn.textContent = 'Baixando...';
+    btn.disabled = true;
+    try {
+      const cfg3 = await window.neo.server.getConfig();
+      const ollamaUrl = `http://${cfg3.ollamaHost}:11434`;
+      // Inicia o pull (Ollama faz streaming; só verifica se aceitou)
+      const r = await fetch(`${ollamaUrl}/api/pull`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (r.ok) {
+        $('model-input').value = '';
+        setTimeout(loadModels, 2000);
+      } else {
+        alert('Erro ao iniciar download. Verifique o nome do modelo.');
+      }
+    } catch {
+      alert('Ollama inacessível. Verifique se está rodando.');
+    }
+    btn.textContent = 'Baixar modelo';
+    btn.disabled = false;
+  });
+
+  // ── Init ─────────────────────────────────────────
+  refreshStatus();
+  loadModels();
+})();
+</script>
+</body>
+</html>

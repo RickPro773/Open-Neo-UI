@@ -1,0 +1,88 @@
+{
+  "name": "neo-ui",
+  "version": "0.3.1",
+  "description": "Neo UI — Neotek AI Desktop Shell",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "dev":        "concurrently \"tsc -w -p tsconfig.main.json\" \"tsc -w -p tsconfig.renderer.json\" \"wait-on dist/main/main.js && electron .\"",
+    "build":      "tsc -p tsconfig.main.json && tsc -p tsconfig.renderer.json",
+    "start":      "electron .",
+    "dist:win":   "npm run build && electron-builder --win --x64",
+    "dist:linux": "npm run build && electron-builder --linux --x64",
+    "dist:mac":   "npm run build && electron-builder --mac",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId":       "com.neotek.neo-ui",
+    "productName": "Neo UI",
+    "copyright":   "Copyright © 2025 Neotek Studios",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/node-pty/**/*"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "dist/**/*",
+      "src/renderer/**/*.html",
+      "src/renderer/**/*.css",
+      "assets/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      { "from": "assets/", "to": "assets/", "filter": ["**/*"] }
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "assets/icons/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick":                      false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon":       "assets/icons/icon.ico",
+      "uninstallerIcon":     "assets/icons/icon.ico",
+      "installerHeaderIcon": "assets/icons/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Neo UI"
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "deb",      "arch": ["x64"] }
+      ],
+      "icon":     "assets/icons/icon.png",
+      "category": "Utility"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg",      "arch": ["x64", "arm64"] }
+      ],
+      "icon":           "assets/icons/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    }
+  },
+  "devDependencies": {
+    "@types/node":        "^20.14.0",
+    "concurrently":       "^8.2.2",
+    "electron":           "^31.2.0",
+    "electron-builder":   "^24.13.3",
+    "typescript":         "^5.5.3",
+    "wait-on":            "^7.2.0"
+  },
+  "dependencies": {
+    "@xterm/xterm":          "^5.5.0",
+    "@xterm/addon-fit":      "^0.10.0",
+    "@xterm/addon-web-links": "^0.11.0",
+    "@xterm/addon-search":   "^0.15.0",
+    "electron-store":        "^10.0.0",
+    "node-pty":              "^1.0.0"
+  }
+}

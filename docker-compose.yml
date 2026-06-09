@@ -1,0 +1,120 @@
+version: "3.9"
+
+# ══════════════════════════════════════════════════════════════
+#  Neotek AI Stack — Modo LOCAL (PC da rede)
+#  Funciona em Windows/Linux/macOS com Docker Desktop
+#  Para usar GPU NVIDIA: descomente a seção "deploy" no ollama
+# ══════════════════════════════════════════════════════════════
+
+services:
+
+  # ─── INTERFACE WEB ───────────────────────────────────────────
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"        # acesse pelo PC: http://localhost:3000
+                           # de outro PC na rede: http://IP_DESTE_PC:3000
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434  # Ollama nativo no host
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-neotek-dev-key-mude-em-producao}
+      - DEFAULT_MODELS=qwen3:8b
+      - ENABLE_SIGNUP=true
+      - ENABLE_LOGIN_FORM=true
+    volumes:
+      - open-webui-data:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux precisa disso
+    depends_on:
+      - gateway-rust
+    networks:
+      - stack-net
+
+  # ─── GATEWAY RUST ────────────────────────────────────────────
+  gateway-rust:
+    build:
+      context: ./gateway-rust
+      dockerfile: Dockerfile
+    container_name: gateway-rust
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - API_KEY=${API_KEY:-neotek-local-dev}
+      - GO_ORCHESTRATOR_URL=http://orchestrator-go:9090
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    networks:
+      - stack-net
+
+  # ─── ORQUESTRADOR GO ─────────────────────────────────────────
+  orchestrator-go:
+    build:
+      context: ./orchestrator-go
+      dockerfile: Dockerfile
+    container_name: orchestrator-go
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    environment:
+      - MCP_SERVER_URL=http://mcp-python:8000
+      - OLLAMA_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - stack-net
+
+  # ─── MCP SERVER PYTHON ───────────────────────────────────────
+  mcp-python:
+    build:
+      context: ./mcp-python
+      dockerfile: Dockerfile
+    container_name: mcp-python
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://neotek:${POSTGRES_PASSWORD:-neotek123}@postgres:5432/neotekdb
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - WORKSPACE_DIR=/workspace
+    volumes:
+      - ./mcp-python:/app
+      - mcp-workspace:/workspace   # pasta de trabalho da IA (arquivos gerados)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - stack-net
+
+  # ─── BANCO DE DADOS ──────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=neotek
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-neotek123}
+      - POSTGRES_DB=neotekdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./data/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neotek -d neotekdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - stack-net
+
+volumes:
+  open-webui-data:
+  postgres-data:
+  mcp-workspace:
+
+networks:
+  stack-net:
+    driver: bridge
