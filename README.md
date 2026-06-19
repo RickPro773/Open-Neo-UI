@@ -1,80 +1,124 @@
-# Neotek AI Stack — Setup no VPS Oracle
+# Open Neo UI
 
-## Requisitos
-- VPS Oracle Free Tier (4 OCPUs ARM / 24GB RAM)
-- Ubuntu 22.04
-- Docker + Docker Compose instalados
+**Versao:** `v0.3.3-beta`
 
-## 1. Instalar Docker no Ubuntu
+Open Neo UI e um desktop agent workspace para Windows, feito para usar IA local
+ou remota com uma interface nativa, terminal integrado, monitor de execucao,
+tools locais e integracao com engines como Unity.
 
-```bash
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
-newgrp docker
+A partir da `v0.3.3-beta`, o projeto fica concentrado no app nativo local.
+A arquitetura principal passa a ser:
+
+```text
+WinUI 3 + C# desktop
+        |
+        | HTTP + WebSocket
+        v
+Python + FastAPI local tools API
+        |
+        | FFI / subprocess / IPC
+        v
+C++/C native backend core
 ```
 
-## 2. Subir a stack
+Go pode ser usado depois como worker/orquestrador opcional, mas nao e necessario
+para o primeiro app funcional.
 
-```bash
-git clone <seu-repo> neotek-ai-stack
-cd neotek-ai-stack
+## O que o app deve fazer
 
-# Editar variáveis de ambiente antes de subir:
-# - WEBUI_SECRET_KEY no docker-compose.yml
-# - API_KEY no docker-compose.yml
+- Chat com IA local/remota.
+- Terminal integrado em abas.
+- Aba especial para monitorar o que a IA esta fazendo.
+- Execucao de tools locais com aprovacao.
+- Leitura e escrita de arquivos do workspace.
+- Integracao com Git.
+- Deteccao de projetos Unity.
+- Criacao e edicao de scripts C# para Unity.
+- Uso de C++/C no backend para processos, watchers e partes criticas.
 
-docker compose up -d --build
+## Stack oficial
+
+| Camada | Tecnologia | Status |
+| --- | --- | --- |
+| Desktop | WinUI 3 + C#/.NET 8 | Principal |
+| API local | Python + FastAPI | Principal |
+| Core nativo | C++/C | Principal |
+| Containers | Docker Compose | Local/dev |
+| Worker opcional | Go | Opcional |
+
+## Estrutura
+
+```text
+apps/
+  winui-shell/          # Desktop WinUI 3 + C#
+core/
+  native/               # Backend core C/C++
+services/
+  api-python/           # FastAPI local
+  agent-runtime/        # Contratos e politicas do agente
+infra/
+  docker/               # Docker local
+orchestrator-go/        # Worker opcional em Go
+docs/
+  ARCHITECTURE.md
+  ICONS.md
+  RELEASE_V0.3.3-beta.md
 ```
 
-## 3. Baixar modelos no Ollama
+## Rodar API local
 
-```bash
-# Modelo leve (4GB RAM):
-docker exec ollama ollama pull gemma3:4b
-
-# Modelo médio (8GB RAM):
-docker exec ollama ollama pull qwen3:8b
-
-# Modelo maior (16GB RAM):
-docker exec ollama ollama pull qwen3:14b
+```powershell
+cd E:\Open-Neo-UI-Workspace\Open-Neo-UI\services\api-python
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 ```
 
-## 4. Acessar
+Teste:
 
-- Open WebUI: http://SEU_IP:3000
-- Gateway Rust: http://SEU_IP:8080/health
-- Orquestrador Go: http://SEU_IP:9090/health
-- MCP Python: http://SEU_IP:8000/docs
-- MCP Tools list: http://SEU_IP:8000/tools
-
-## 5. Abrir portas no Oracle (Firewall)
-
-No painel Oracle Cloud → VCN → Security Lists → adicionar Ingress Rules:
-- Porta 3000 (Open WebUI)
-- Porta 8080 (Gateway)
-
-Também no Ubuntu:
-```bash
-sudo iptables -I INPUT -p tcp --dport 3000 -j ACCEPT
-sudo iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
-sudo netfilter-persistent save
+```powershell
+curl http://localhost:8000/health
 ```
 
-## Serviços
+## Rodar desktop WinUI
 
-| Serviço         | Porta | Tecnologia     | Função                        |
-|-----------------|-------|----------------|-------------------------------|
-| Open WebUI      | 3000  | Docker image   | Interface do usuário          |
-| Ollama          | 11434 | Docker image   | Modelos de IA locais          |
-| Gateway Rust    | 8080  | Rust / Axum    | Proxy, auth, rate limit       |
-| Orquestrador Go | 9090  | Go             | Roteamento de tools MCP       |
-| MCP Python      | 8000  | FastAPI        | Tools reais (arquivos, shell) |
-| PostgreSQL      | 5432  | Postgres 16    | Banco de dados                |
+Requer Visual Studio com:
 
-## Próximos passos (futuras versões)
+- .NET desktop development
+- Windows App SDK
+- Windows 10/11 SDK
 
-- [ ] Nginx como reverse proxy com HTTPS (Let's Encrypt)
-- [ ] Autenticação JWT no gateway Rust
-- [ ] gRPC real entre Go e Python
-- [ ] Mais tools MCP (GitHub, busca avançada, geração de código)
-- [ ] Dashboard de monitoramento (Grafana + Prometheus)
+Depois:
+
+```powershell
+cd E:\Open-Neo-UI-Workspace\Open-Neo-UI
+dotnet build apps\winui-shell\OpenNeo.UI.csproj
+dotnet run --project apps\winui-shell\OpenNeo.UI.csproj
+```
+
+## Rodar com Docker
+
+```powershell
+docker compose up --build
+```
+
+O Compose atual sobe apenas servicos locais essenciais.
+
+## Icones
+
+- Windows: `assets/icons/logo.ico`
+- Linux: `assets/icons/logo.svg`
+- macOS: `assets/icons/logo.icns`
+
+Detalhes em [docs/ICONS.md](docs/ICONS.md).
+
+## Commit sugerido
+
+```powershell
+git add .
+git commit -m "Release v0.3.3-beta WinUI native architecture"
+git tag v0.3.3-beta
+git push origin main
+git push origin v0.3.3-beta
+```

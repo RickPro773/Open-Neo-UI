@@ -7,7 +7,7 @@ import httpx
 import asyncpg
 import subprocess
 
-app = FastAPI(title="Neotek MCP Server", version="0.1.0")
+app = FastAPI(title="Open Neo UI MCP Server", version="0.3.3-beta")
 
 app.add_middleware(
     CORSMiddleware,

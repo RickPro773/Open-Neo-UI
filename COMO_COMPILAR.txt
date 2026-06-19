@@ -1,193 +1,73 @@
-╔══════════════════════════════════════════════════════════════════════╗
-║         NEO UI — COMO COMPILAR E GERAR O .EXE                       ║
-║                     COMO_COMPILAR.txt                                ║
-╚══════════════════════════════════════════════════════════════════════╝
+OPEN NEO UI v0.3.3-beta - COMO COMPILAR
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PRÉ-REQUISITOS (instale antes de qualquer coisa)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ARQUITETURA ATUAL
 
-1. Node.js 20 LTS (ou superior)
-   Download: https://nodejs.org/en/download
-   Versão recomendada: 20.x LTS
-   Verificar: node --version   (deve mostrar v20.x.x)
-              npm --version    (deve mostrar 10.x.x)
+- Desktop: apps/winui-shell (WinUI 3 + C#)
+- API local: services/api-python (Python + FastAPI)
+- Backend core: core/native (C++/C)
+- Worker opcional: orchestrator-go (Go)
+- Infra local: docker-compose.yml
 
-2. Git (opcional, para clonar)
-   Download: https://git-scm.com/download/win
+1. COMPILAR O CORE C/C++
 
-3. Visual Studio Build Tools (OBRIGATÓRIO no Windows para node-pty)
-   Download: https://visualstudio.microsoft.com/visual-cpp-build-tools/
-   Na instalação, selecione:
-     [x] Desenvolvimento para desktop com C++
-         (inclui MSVC, Windows SDK, CMake)
+Requisitos:
+- CMake
+- Visual Studio Build Tools ou Visual Studio Community com C++ Desktop
 
-   OU instale via Chocolatey (mais fácil):
-     choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools"
+Comando:
 
-4. Python 3.x (para node-gyp compilar node-pty)
-   Download: https://python.org/downloads
-   Durante instalação marque: [x] Add Python to PATH
+  powershell -ExecutionPolicy Bypass -File scripts\build-native.ps1
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PASSO 1 — ENTRAR NA PASTA DO FRONTEND
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Saida esperada:
 
-Abra o PowerShell ou CMD na pasta do projeto:
+  core\native\build\Release\open_neo_core.dll
 
-  cd C:\caminho\para\neotek-local\frontend
+2. RODAR A API PYTHON
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PASSO 2 — INSTALAR DEPENDÊNCIAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Requisitos:
+- Python 3.12+
 
-  npm install
+Comando:
 
-  Este comando instala:
-  - Electron (Chromium embutido ~200MB)
-  - electron-builder (empacotador)
-  - TypeScript (compilador)
-  - node-pty (terminal PTY — precisa do Visual Studio Build Tools)
-  - xterm.js (UI do terminal)
-  - electron-store (persistência de config)
+  powershell -ExecutionPolicy Bypass -File scripts\start-api.ps1
 
-  ⚠ Se der erro no node-pty:
-    npm install --ignore-scripts
-    npm run postinstall
+Teste:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PASSO 3 — TESTAR EM MODO DEV (opcional mas recomendado)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  powershell -ExecutionPolicy Bypass -File scripts\health.ps1
 
-  npm run dev
+3. COMPILAR O DESKTOP WINUI 3
 
-  Isso:
-  1. Compila o TypeScript em modo watch (recompila ao salvar)
-  2. Aguarda o output existir
-  3. Abre o app Electron automaticamente
+Requisitos:
+- Visual Studio com .NET desktop development
+- Windows App SDK
+- Windows 10/11 SDK
 
-  Para fechar: Ctrl+C no terminal
+Comandos:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PASSO 4 — CRIAR OS ÍCONES (necessário para .exe)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  dotnet build apps\winui-shell\OpenNeo.UI.csproj
+  dotnet run --project apps\winui-shell\OpenNeo.UI.csproj
 
-O electron-builder precisa de ícones nas pastas certas:
+4. RODAR COM DOCKER
 
-  frontend/assets/icons/
-  ├── icon.ico      ← Windows (256x256, formato .ico)
-  ├── icon.png      ← Linux   (256x256, formato .png)
-  ├── icon.icns     ← macOS   (formato .icns)
-  └── tray.png      ← Tray/bandeja (16x16 ou 32x32)
+Comando:
 
-COMO CRIAR O icon.ico a partir de um PNG:
+  docker compose up --build
 
-  Opção 1 — Online (mais fácil):
-    https://convertio.co/png-ico/
-    https://www.icoconverter.com/
-    Use um PNG 256x256 e converta para ICO
+Servicos:
 
-  Opção 2 — PowerShell + ImageMagick:
-    choco install imagemagick
-    magick convert icon.png -define icon:auto-resize=256,128,64,48,32,16 icon.ico
+- api-python: http://localhost:8000
+- ollama: http://localhost:11434
 
-  Opção 3 — Se não tiver ícone agora, remova as linhas de ícone
-  do package.json temporariamente para testar o build.
+5. ICONES
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PASSO 5 — COMPILAR O TYPESCRIPT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Windows: assets\icons\logo.ico
+- Linux: assets\icons\logo.svg
+- macOS: assets\icons\logo.icns
 
-  npm run build
+6. COMMIT DA RELEASE
 
-  Gera as pastas:
-    dist/main/     ← main.ts, preload.ts, ipc/*.ts compilados
-    dist/renderer/ ← shell.ts compilado
-
-  Se der erro de TypeScript, o erro vai mostrar o arquivo e linha.
-  Os mais comuns e como resolver:
-
-  ERRO: Cannot find module 'electron-store'
-  FIX:  npm install (dependência faltando)
-
-  ERRO: rootDir is expected to contain all source files
-  FIX:  Verifique tsconfig.main.json — rootDir deve ser "src"
-
-  ERRO: Property 'neo' does not exist on type 'Window'
-  FIX:  Normal no tsconfig.renderer.json — adicione skipLibCheck: true
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PASSO 6 — GERAR O INSTALADOR .EXE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  npm run dist:win
-
-  O que esse comando faz:
-  1. Roda npm run build (compila TS)
-  2. electron-builder empacota tudo
-  3. Gera dois arquivos em frontend/release/:
-
-  release/
-  ├── Neo UI Setup 0.3.1.exe    ← INSTALADOR NSIS (com wizard de instalação)
-  └── Neo UI 0.3.1.exe          ← PORTÁTIL (executa sem instalar)
-
-  O instalador NSIS:
-  - Cria ícone na área de trabalho
-  - Cria entrada no menu Iniciar
-  - Aparece no "Adicionar/Remover Programas"
-  - Permite escolher pasta de instalação
-
-  O portátil:
-  - Extrai e roda direto, sem instalar nada no sistema
-  - Ideal para testar ou distribuir sem instalação
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PROBLEMAS COMUNS AO GERAR O .EXE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-ERRO: Cannot find 'assets/icons/icon.ico'
-FIX:  Crie o arquivo de ícone conforme o Passo 4.
-      Ou remova a linha "icon" do package.json temporariamente.
-
-ERRO: node-pty not rebuilt for Electron X
-FIX:  npm run postinstall
-      (rebuilda módulos nativos para a versão do Electron)
-
-ERRO: NSIS not found
-FIX:  electron-builder instala automaticamente o NSIS.
-      Se falhar: npm install -g electron-builder
-
-ERRO: spawn ENOENT (durante build)
-FIX:  Reinstale dependências:
-      rmdir /s /q node_modules
-      npm install
-
-ERRO: Cannot read 'asar' (arquivo corrompido)
-FIX:  Delete a pasta release/ e tente novamente.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- DISTRIBUIR PARA OUTROS PCs
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. Copie "Neo UI Setup 0.3.1.exe" para o outro PC
-2. Execute o instalador
-3. Abra o Neo UI
-4. Vá na aba "Configurações"
-5. Em "IP do servidor", coloque o IP do PC que roda a stack Docker
-   (ex: 192.168.1.100)
-6. Clique "Salvar"
-7. As abas vão se conectar ao servidor automaticamente
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- RESUMO DOS COMANDOS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  cd frontend
-  npm install          # instalar dependências (1x)
-  npm run dev          # rodar em desenvolvimento
-  npm run build        # compilar TypeScript
-  npm run dist:win     # gerar .exe (Windows)
-  npm run dist:linux   # gerar .AppImage (Linux)
-  npm run dist:mac     # gerar .dmg (macOS)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  git add .
+  git commit -m "Release v0.3.3-beta native WinUI update"
+  git tag v0.3.3-beta
+  git push origin main
+  git push origin v0.3.3-beta

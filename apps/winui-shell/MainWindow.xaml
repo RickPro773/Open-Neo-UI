@@ -1,0 +1,133 @@
+<Window
+    x:Class="OpenNeo.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Open Neo UI">
+
+    <Grid Background="#070A0F">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="76" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="360" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Background="#0D121A" Padding="12" Spacing="12">
+            <Border Width="48" Height="48" CornerRadius="10" Background="#102430" BorderBrush="#245062" BorderThickness="1">
+                <TextBlock Text="ON" Foreground="#22D3EE" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+
+            <Button Content="AI" Height="42" />
+            <Button Content="Term" Height="42" />
+            <Button Content="Git" Height="42" />
+            <Button Content="Unity" Height="42" />
+            <Button Content="Core" Height="42" />
+        </StackPanel>
+
+        <Grid Grid.Column="1" Padding="26">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Open Neo UI" Foreground="#F1F7FF" FontSize="30" FontWeight="SemiBold" />
+                    <TextBlock Text="v0.3.3-beta - WinUI 3, Python FastAPI, C++/C native backend core" Foreground="#90A4BA" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                    <Border Background="#12251F" BorderBrush="#245D4A" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <TextBlock Text="Local API :8000" Foreground="#34D399" />
+                    </Border>
+                    <Border Background="#172033" BorderBrush="#2C4161" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                        <TextBlock Text="Native Core ready" Foreground="#22D3EE" />
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnSpacing="16" RowSpacing="16" Margin="0,24,0,24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="220" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Background="#111722" BorderBrush="#243244" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Agent Chat" Foreground="#F1F7FF" FontSize="18" FontWeight="SemiBold" />
+                        <StackPanel Grid.Row="1" Margin="0,18,0,0" Spacing="12">
+                            <Border Background="#172033" CornerRadius="8" Padding="14">
+                                <TextBlock Text="Pronto para conectar no FastAPI local e monitorar tools." Foreground="#C8D4E3" TextWrapping="Wrap" />
+                            </Border>
+                            <Border Background="#101820" CornerRadius="8" Padding="14">
+                                <TextBlock Text="A IA deve pedir permissao antes de escrever arquivos, rodar comandos ou mexer em engines." Foreground="#90A4BA" TextWrapping="Wrap" />
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="1" Background="#111722" BorderBrush="#243244" BorderThickness="1" CornerRadius="8" Padding="18">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Workspace" Foreground="#F1F7FF" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="Files" Foreground="#90A4BA" />
+                        <TextBlock Text="Git" Foreground="#90A4BA" />
+                        <TextBlock Text="Unity projects" Foreground="#90A4BA" />
+                        <TextBlock Text="Models" Foreground="#90A4BA" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#090D13" BorderBrush="#243244" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Integrated Terminal / AI Monitor" Foreground="#F1F7FF" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock FontFamily="Consolas" Foreground="#22D3EE" Text="agent.connected  Open Neo UI event stream connected." />
+                        <TextBlock FontFamily="Consolas" Foreground="#A3E635" Text="tool.ready       workspace.list, git.status, engines.scan, terminal.run" />
+                        <TextBlock FontFamily="Consolas" Foreground="#90A4BA" Text="native.core      C++/C process bridge initialized" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <TextBox PlaceholderText="Ask the agent or type a command..." Height="44" />
+                <Button Content="Run" Width="92" HorizontalAlignment="Right" Margin="0,4,4,4" />
+            </Grid>
+        </Grid>
+
+        <Border Grid.Column="2" Background="#0D121A" BorderBrush="#1D2A3A" BorderThickness="1,0,0,0" Padding="20">
+            <StackPanel Spacing="18">
+                <TextBlock Text="Runtime" Foreground="#F1F7FF" FontSize="20" FontWeight="SemiBold" />
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Python FastAPI" Foreground="#C8D4E3" />
+                    <ProgressBar Value="100" Maximum="100" />
+                    <TextBlock Text="C++/C native core" Foreground="#C8D4E3" />
+                    <ProgressBar Value="70" Maximum="100" />
+                    <TextBlock Text="Unity adapter" Foreground="#C8D4E3" />
+                    <ProgressBar Value="45" Maximum="100" />
+                </StackPanel>
+
+                <Border Background="#111722" BorderBrush="#243244" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Safety" Foreground="#F1F7FF" FontWeight="SemiBold" />
+                        <TextBlock Text="Commands and file writes require approval." Foreground="#90A4BA" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#111722" BorderBrush="#243244" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Engines" Foreground="#F1F7FF" FontWeight="SemiBold" />
+                        <TextBlock Text="Unity scanning is available through POST /engines/scan." Foreground="#90A4BA" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
