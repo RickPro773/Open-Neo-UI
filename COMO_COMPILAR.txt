@@ -64,10 +64,4 @@ Servicos:
 - Linux: assets\icons\logo.svg
 - macOS: assets\icons\logo.icns
 
-6. COMMIT DA RELEASE
 
-  git add .
-  git commit -m "Release v0.3.3-beta native WinUI update"
-  git tag v0.3.3-beta
-  git push origin main
-  git push origin v0.3.3-beta
